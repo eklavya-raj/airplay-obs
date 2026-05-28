@@ -1,0 +1,44 @@
+name: Build and Release macOS Plugin
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          brew update
+          brew install cmake ffmpeg gstreamer dylibbundler
+
+      - name: Build OBS Plugin
+        run: |
+          # The install script handles fetching headers and compiling
+          ./scripts/install.sh
+          
+      - name: Bundle and Fix GStreamer
+        run: |
+          mkdir -p dmg_tmp
+          cp Install.command dmg_tmp/
+          cp -R build/obs-airplay-source.plugin dmg_tmp/
+          
+          # Fix the dylib paths inside the bundled plugin so it can run independently
+          ./scripts/fix-bundled-gstreamer.sh dmg_tmp/obs-airplay-source.plugin
+          
+          # Create DMG
+          hdiutil create -volname "OBS AirPlay Installer" -srcfolder dmg_tmp -ov -format UDZO obs-airplay-installer.dmg
+
+      - name: Upload Release Artifact
+        uses: softprops/action-gh-release@v1
+        with:
+          files: obs-airplay-installer.dmg
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

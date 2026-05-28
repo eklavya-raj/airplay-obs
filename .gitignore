@@ -1,0 +1,8 @@
+build/
+cmake/
+*.dmg
+dmg_tmp/
+.DS_Store
+vendor/obs-studio/build/
+vendor/obs-studio/build_x86_64/
+vendor/obs-studio/build_arm64/
