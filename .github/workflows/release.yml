@@ -23,6 +23,7 @@ jobs:
       - name: Build OBS Plugin
         run: |
           # The install script handles fetching headers and compiling
+          export OBS_VERSION="30.1.2"
           ./scripts/install.sh
           
       - name: Bundle and Fix GStreamer
